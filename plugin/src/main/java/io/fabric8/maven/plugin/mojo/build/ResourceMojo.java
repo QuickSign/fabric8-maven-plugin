@@ -435,7 +435,7 @@ public class ResourceMojo extends AbstractResourceMojo {
         if (isTargetPlatformOpenShift(item)) {
             return true;
         }
-        return item.getClass().getPackage().getName().contains("openshift");
+        return item.getApiVersion().contains("openshift");
     }
 
     private boolean isTargetPlatformOpenShift(HasMetadata item) {
