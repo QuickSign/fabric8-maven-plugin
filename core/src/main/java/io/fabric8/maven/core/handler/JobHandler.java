@@ -1,6 +1,7 @@
 package io.fabric8.maven.core.handler;
 
 import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.api.model.batch.*;
 import io.fabric8.maven.core.config.ResourceConfig;
 import io.fabric8.maven.docker.config.ImageConfiguration;
 import io.fabric8.kubernetes.api.KubernetesHelper;

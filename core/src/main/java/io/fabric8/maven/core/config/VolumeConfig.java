@@ -73,6 +73,9 @@ public class VolumeConfig {
     @Parameter
     private String claimRef;
 
+    @Parameter
+    private String hostPathType;
+
     public String getType() {
         return type;
     }
@@ -128,6 +131,8 @@ public class VolumeConfig {
     public String getClaimRef() {
         return claimRef;
     }
+
+    public String getHostPathType() { return hostPathType; }
 
     public List<String> getMounts() {
         return mounts;

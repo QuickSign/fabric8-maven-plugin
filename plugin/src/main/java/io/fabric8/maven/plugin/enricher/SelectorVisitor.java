@@ -20,7 +20,8 @@ import java.util.Map;
 
 import io.fabric8.kubernetes.api.builder.TypedVisitor;
 import io.fabric8.kubernetes.api.model.*;
-import io.fabric8.kubernetes.api.model.extensions.*;
+import io.fabric8.kubernetes.api.model.apps.*;
+import io.fabric8.kubernetes.api.model.batch.*;
 import io.fabric8.maven.core.config.ProcessorConfig;
 import io.fabric8.maven.enricher.api.Kind;
 
@@ -64,7 +65,14 @@ public abstract class SelectorVisitor<T> extends TypedVisitor<T> {
 
         @Override
         public void visit(ServiceSpecBuilder item) {
-            item.getSelector().putAll(enricherManager.extractSelector(getConfig(), Kind.SERVICE));
+
+            Map<String, String> selectors = enricherManager.extractSelector(getConfig(), Kind.SERVICE);
+            if (item.hasSelector()) {
+                item.getSelector().putAll(selectors);
+            }
+            else {
+                item.withSelector(selectors);
+            }
         }
     }
 
@@ -75,7 +83,14 @@ public abstract class SelectorVisitor<T> extends TypedVisitor<T> {
 
         @Override
         public void visit(ReplicationControllerSpecBuilder item) {
-            item.getSelector().putAll(enricherManager.extractSelector(getConfig(), Kind.REPLICATION_CONTROLLER));
+
+            Map<String, String> selectors = enricherManager.extractSelector(getConfig(), Kind.REPLICATION_CONTROLLER);
+            if (item.hasSelector()) {
+                item.getSelector().putAll(selectors);
+            }
+            else {
+                item.withSelector(selectors);
+            }
         }
     }
 
