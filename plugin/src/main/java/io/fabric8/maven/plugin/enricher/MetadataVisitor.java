@@ -16,9 +16,11 @@
 
 package io.fabric8.maven.plugin.enricher;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import io.fabric8.kubernetes.api.builder.TypedVisitor;
 import io.fabric8.kubernetes.api.model.*;
@@ -153,7 +155,8 @@ public abstract class MetadataVisitor<T> extends TypedVisitor<T> {
 
         @Override
         protected ObjectMeta getOrCreateMetadata(PodTemplateSpecBuilder item) {
-            return item.hasMetadata() ? item.buildMetadata() : item.withNewMetadata().endMetadata().buildMetadata();
+            return addEmptyLabelsAndAnnotations(item::hasMetadata, item::withNewMetadata, item::editMetadata, item::buildMetadata)
+                    .endMetadata().buildMetadata();
         }
     }
 
@@ -170,7 +173,8 @@ public abstract class MetadataVisitor<T> extends TypedVisitor<T> {
 
         @Override
         protected ObjectMeta getOrCreateMetadata(ServiceBuilder item) {
-            return item.hasMetadata() ? item.buildMetadata() : item.withNewMetadata().endMetadata().buildMetadata();
+            return addEmptyLabelsAndAnnotations(item::hasMetadata, item::withNewMetadata, item::editMetadata, item::buildMetadata)
+                    .endMetadata().buildMetadata();
         }
     }
 
@@ -186,7 +190,8 @@ public abstract class MetadataVisitor<T> extends TypedVisitor<T> {
 
         @Override
         protected ObjectMeta getOrCreateMetadata(ReplicaSetBuilder item) {
-            return item.hasMetadata() ? item.buildMetadata() : item.withNewMetadata().endMetadata().buildMetadata();
+            return addEmptyLabelsAndAnnotations(item::hasMetadata, item::withNewMetadata, item::editMetadata, item::buildMetadata)
+                    .endMetadata().buildMetadata();
         }
     }
 
@@ -202,7 +207,8 @@ public abstract class MetadataVisitor<T> extends TypedVisitor<T> {
 
         @Override
         protected ObjectMeta getOrCreateMetadata(ReplicationControllerBuilder item) {
-            return item.hasMetadata() ? item.buildMetadata() : item.withNewMetadata().endMetadata().buildMetadata();
+            return addEmptyLabelsAndAnnotations(item::hasMetadata, item::withNewMetadata, item::editMetadata, item::buildMetadata)
+                    .endMetadata().buildMetadata();
         }
     }
 
@@ -218,7 +224,8 @@ public abstract class MetadataVisitor<T> extends TypedVisitor<T> {
 
         @Override
         protected ObjectMeta getOrCreateMetadata(DeploymentBuilder item) {
-            return item.hasMetadata() ? item.buildMetadata() : item.withNewMetadata().endMetadata().buildMetadata();
+            return addEmptyLabelsAndAnnotations(item::hasMetadata, item::withNewMetadata, item::editMetadata, item::buildMetadata)
+                    .endMetadata().buildMetadata();
         }
     }
 
@@ -234,7 +241,8 @@ public abstract class MetadataVisitor<T> extends TypedVisitor<T> {
 
         @Override
         protected ObjectMeta getOrCreateMetadata(DaemonSetBuilder item) {
-            return item.hasMetadata() ? item.buildMetadata() : item.withNewMetadata().endMetadata().buildMetadata();
+            return addEmptyLabelsAndAnnotations(item::hasMetadata, item::withNewMetadata, item::editMetadata, item::buildMetadata)
+                    .endMetadata().buildMetadata();
         }
     }
 
@@ -250,7 +258,8 @@ public abstract class MetadataVisitor<T> extends TypedVisitor<T> {
 
         @Override
         protected ObjectMeta getOrCreateMetadata(StatefulSetBuilder item) {
-            return item.hasMetadata() ? item.buildMetadata() : item.withNewMetadata().endMetadata().buildMetadata();
+            return addEmptyLabelsAndAnnotations(item::hasMetadata, item::withNewMetadata, item::editMetadata, item::buildMetadata)
+                    .endMetadata().buildMetadata();
         }
     }
 
@@ -266,7 +275,26 @@ public abstract class MetadataVisitor<T> extends TypedVisitor<T> {
 
         @Override
         protected ObjectMeta getOrCreateMetadata(JobBuilder item) {
-            return item.hasMetadata() ? item.buildMetadata() : item.withNewMetadata().endMetadata().buildMetadata();
+            return addEmptyLabelsAndAnnotations(item::hasMetadata, item::withNewMetadata, item::editMetadata, item::buildMetadata)
+                    .endMetadata().buildMetadata();
         }
+    }
+
+    private static <T extends ObjectMetaFluent<?>> T addEmptyLabelsAndAnnotations(
+            Supplier<Boolean> hasMetadata, Supplier<T> withNewMetadata, Supplier<T> editMetadata, Supplier<ObjectMeta> buildMetadata) {
+        final T ret;
+        if (Boolean.TRUE.equals(hasMetadata.get())) {
+            ret = editMetadata.get();
+            if (buildMetadata.get().getLabels() == null) {
+                ret.withLabels(Collections.emptyMap());
+            }
+            if (buildMetadata.get().getAnnotations() == null) {
+                ret.withAnnotations(Collections.emptyMap());
+            }
+        } else {
+            ret = withNewMetadata.get();
+            ret.withLabels(Collections.emptyMap()).withAnnotations(Collections.emptyMap());
+        }
+        return ret;
     }
 }

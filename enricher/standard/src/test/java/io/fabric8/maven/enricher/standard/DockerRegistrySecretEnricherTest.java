@@ -16,9 +16,12 @@
 
 package io.fabric8.maven.enricher.standard;
 
+import com.google.gson.JsonObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.gson.JsonParser;
 import io.fabric8.kubernetes.api.model.KubernetesList;
 import io.fabric8.kubernetes.api.model.KubernetesListBuilder;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
@@ -27,6 +30,7 @@ import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.maven.core.util.SecretConstants;
 import io.fabric8.maven.enricher.api.EnricherContext;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.junit.Test;
@@ -37,6 +41,7 @@ import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author yuwzho
@@ -67,12 +72,20 @@ public class DockerRegistrySecretEnricherTest {
         builder.addToSecretItems(createBaseSecret(true));
         enricher.addMissingResources(builder);
 
-        KubernetesListBuilder expectedBuilder = new KubernetesListBuilder();
-        Secret expectedSecret = createBaseSecret(false);
-        expectedSecret.getData().put(SecretConstants.DOCKER_DATA_KEY,
-                "eyJkb2NrZXIuaW8iOnsicGFzc3dvcmQiOiJwYXNzd29yZCIsImVtYWlsIjoiZm9vQGZvby5jb20iLCJ1c2VybmFtZSI6InVzZXJuYW1lIn19");
-        expectedBuilder.addToSecretItems(expectedSecret);
-        assertEquals(expectedBuilder.build(), builder.build());
+
+        Secret secretEnriched = (Secret) builder.buildItem(0);
+        Map<String, String> enrichedData = secretEnriched.getData();
+        assertThat(enrichedData.size()).isEqualTo(1);
+        String data = enrichedData.get(SecretConstants.DOCKER_DATA_KEY);
+        assertThat(data).isNotNull();
+        JsonObject auths = (JsonObject) new JsonParser().parse(new String(Base64.decodeBase64(data)));
+        assertThat(auths.size()).isEqualTo(1);
+        JsonObject auth = auths.getAsJsonObject("docker.io");
+        assertThat(auth.size()).isEqualTo(3);
+
+        assertThat(auth.get("username").getAsString()).isEqualTo("username");
+        assertThat(auth.get("password").getAsString()).isEqualTo("password");
+        assertThat(auth.get("email").getAsString()).isEqualTo("foo@foo.com");
     }
 
     @Test

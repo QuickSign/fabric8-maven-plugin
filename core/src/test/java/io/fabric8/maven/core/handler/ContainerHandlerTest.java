@@ -449,7 +449,7 @@ public class ContainerHandlerTest {
 
         //Empty Ports
         containers = handler.getContainers(config, images);
-        assertTrue(containers.get(0).getPorts().isEmpty());
+        assertNull(containers.get(0).getPorts());
     }
 
     @Test
@@ -468,7 +468,7 @@ public class ContainerHandlerTest {
         images.add(imageConfiguration2);
 
         containers = handler.getContainers(config, images);
-        assertTrue(containers.get(0).getPorts().isEmpty());
+        assertNull(containers.get(0).getPorts());
     }
 
     @Test
