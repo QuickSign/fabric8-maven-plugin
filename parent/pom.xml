@@ -19,7 +19,7 @@
 
   <groupId>io.fabric8</groupId>
   <artifactId>fabric8-maven-parent</artifactId>
-  <version>3.5.43-qs.hotfix.1378.r2</version>
+  <version>3.5.43-qs.hotfix.1378.r3</version>
   <packaging>pom</packaging>
 
   <name>Fabric8 Maven :: Parent</name>
